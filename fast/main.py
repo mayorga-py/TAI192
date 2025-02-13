@@ -1,4 +1,4 @@
-from fastapi import FastAPI 
+from fastapi import FastAPI,HTTPException 
 from typing import Optional
 app= FastAPI(
     title="mi promer API :D",
@@ -16,11 +16,49 @@ usuarios=[
 @app.get("/", tags=['saludo'])
 def home():
     return {"message":"bienvenido a FastAPI"}
+
+#endpoit usuarios
+@app.get("/todosusuarios", tags=['Operaciones CRUD'])
+def leerUsuarios():
+    return {"Los usuarios registrados son :": usuarios}
+
+#endpoit Agregar nuevo usuario
+@app.post("/usuarios/", tags=['Operaciones CRUD'])
+def agregarUsuarios(nuevo_usuario: dict):
+    for usr in usuarios:
+        if usr ["id"] == nuevo_usuario.get("id"):
+            raise HTTPException (status_code=400, detail="este id ya exsiste")
+    usuarios.append(nuevo_usuario)
+    return usuarios
+
+#endpoit
+@app.put("/usuarios/{id}", tags=['Operaciones CRUD'])
+def actualizarUsuario(id: int, usuarioactualizado: dict):
+    for usuario in usuarios:
+        if usuario ["id"]== id:
+            usuario.update(usuarioactualizado)
+            return {"mensaje": "se actualizo el usuario", "usuario": usuario}
+        raise HTTPException (status_code=400, detail="no se encontro el usuario")
+        
+    
+#entpoit parae eliminar usuario
+@app.delete("/usuarios/{id}", tags=['Operaciones CRUD'])
+def eliminarUsuario(id: int):
+    for usuario in usuarios:
+        if usuario["id"] == id:
+            usuarios.remove(usuario)
+            return {"mensaje": "usuario eliminado", "usuario": usuario}
+    
+    raise HTTPException(status_code=404, detail="el usuario no existe, no se puede eliminar")
+
+
+
+
+"""
 #endpoint numero
 @app.get("/promedio", tags=['numeros y asi'])
 def promedio():
     return 5.22
-
 #endpoint parametro onligatorio
 @app.get("/usuario/{is}", tags=['parametro obligattorio'])
 def consultaUsuario(id:int):
@@ -63,3 +101,4 @@ async def consulta_usuarios(
         return {"usuarios_encontrados": resultados}
     else:
         return {"mensaje": "No se encontraron usuarios que coincidan con los parámetros proporcionados."}
+"""
