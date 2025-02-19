@@ -49,7 +49,7 @@ def eliminarUsuario(id: int):
             usuarios.remove(usuario)
             return {"mensaje": "usuario eliminado", "usuario": usuario}
     
-    raise HTTPException(status_code=404, detail="el usuario no existe, no se puede eliminar")
+    raise HTTPException(status_code=400, detail="el usuario no existe, no se puede eliminar")
 
 
 
