@@ -1,15 +1,27 @@
 from fastapi import FastAPI,HTTPException 
-from typing import Optional
+from typing import Optional, List
+
+from pydantic import BaseModel
+
 app= FastAPI(
     title="mi promer API :D",
     description= "Luis M",
-    version= "1.1"
+    version= "1.1.2"
 ) #crear un objeto
+
+
+#modelo de validaciones con pydantic
+class modeloUsuario (BaseModel):
+    id: int
+    nombre: str
+    edad: int
+    email: str
+
 usuarios=[
-    {"id": 1, "nombre":"luis", "edad":21},
-    {"id": 2, "nombre":"eduardo", "edad":18},
-    {"id": 3, "nombre":"jose", "edad":20},
-    {"id": 4, "nombre":"karen", "edad":21},
+    {"id": 1, "nombre":"luis", "edad":21, "email":"1@gmail.com"},
+    {"id": 2, "nombre":"eduardo", "edad":18,"email":"2@gmail.com"},
+    {"id": 3, "nombre":"jose", "edad":20, "email":"3@gmail.com"},
+    {"id": 4, "nombre":"karen", "edad":21, "email":"4@gmail.com"},
 ]
 
 #endpoint home
@@ -18,7 +30,7 @@ def home():
     return {"message":"bienvenido a FastAPI"}
 
 #endpoit usuarios
-@app.get("/todosusuarios", tags=['Operaciones CRUD'])
+@app.get("/todosusuarios", response_model= List[modeloUsuario], tags=['Operaciones CRUD'])
 def leerUsuarios():
     return {"Los usuarios registrados son :": usuarios}
 
@@ -55,6 +67,7 @@ def eliminarUsuario(id: int):
 
 
 """
+/////////////////////////////////////////////////////////////
 #endpoint numero
 @app.get("/promedio", tags=['numeros y asi'])
 def promedio():
