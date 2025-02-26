@@ -1,7 +1,7 @@
 from fastapi import FastAPI,HTTPException 
 from typing import Optional, List
+from models import modeloUsuario
 
-from pydantic import BaseModel
 
 app= FastAPI(
     title="mi promer API :D",
@@ -9,13 +9,6 @@ app= FastAPI(
     version= "1.1.2"
 ) #crear un objeto
 
-
-#modelo de validaciones con pydantic
-class modeloUsuario (BaseModel):
-    id: int
-    nombre: str
-    edad: int
-    email: str
 
 usuarios=[
     {"id": 1, "nombre":"luis", "edad":21, "email":"1@gmail.com"},
@@ -32,24 +25,24 @@ def home():
 #endpoit usuarios
 @app.get("/todosusuarios", response_model= List[modeloUsuario], tags=['Operaciones CRUD'])
 def leerUsuarios():
-    return {"Los usuarios registrados son :": usuarios}
+    return usuarios
 
 #endpoit Agregar nuevo usuario
-@app.post("/usuarios/", tags=['Operaciones CRUD'])
-def agregarUsuarios(nuevo_usuario: dict):
+@app.post("/usuarios/", response_model=modeloUsuario, tags=['Operaciones CRUD'])
+def agregarUsuarios(nuevo_usuario: modeloUsuario):
     for usr in usuarios:
-        if usr ["id"] == nuevo_usuario.get("id"):
+        if usr ["id"] == nuevo_usuario.id:
             raise HTTPException (status_code=400, detail="este id ya exsiste")
     usuarios.append(nuevo_usuario)
     return usuarios
 
 #endpoit
-@app.put("/usuarios/{id}", tags=['Operaciones CRUD'])
-def actualizarUsuario(id: int, usuarioactualizado: dict):
-    for usuario in usuarios:
-        if usuario ["id"]== id:
-            usuario.update(usuarioactualizado)
-            return {"mensaje": "se actualizo el usuario", "usuario": usuario}
+@app.put("/usuarios/{id}", response_model=modeloUsuario, tags=['Operaciones CRUD'])
+def actualizarUsuario(id: int, usuarioactualizado: modeloUsuario):
+    for index, usr in enumerate (usuarios):
+        if usr ["id"]== id:
+            usuarios[index]=usuarioactualizado.model_dump()
+            return usuarios[index]
         raise HTTPException (status_code=400, detail="no se encontro el usuario")
         
     
