@@ -1,10 +1,12 @@
 from fastapi import FastAPI,HTTPException 
+from fastapi.responses import JSONResponse
 from typing import Optional, List
-from models import modeloUsuario
+from modelsPydantic import modeloUsuario, modeloAuth
+from genToken import createToken
 
 
 app= FastAPI(
-    title="mi promer API :D",
+    title="mi primer API :D",
     description= "Luis M",
     version= "1.1.2"
 ) #crear un objeto
@@ -21,6 +23,18 @@ usuarios=[
 @app.get("/", tags=['saludo'])
 def home():
     return {"message":"bienvenido a FastAPI"}
+
+#endpoint autentificacion
+@app.post('/auth', tags=['autentificacion'])
+def login(autorizacion: modeloAuth):
+    if autorizacion.email == '1@gmail.com' and autorizacion.passw == '123456789':
+        token:str = createToken (autorizacion.model_dump())
+        print (token)
+        return JSONResponse(content=token)
+    else:
+        return{"aviso": "el usuario sin autorizacion"}
+
+
 
 #endpoit usuarios
 @app.get("/todosusuarios", response_model= List[modeloUsuario], tags=['Operaciones CRUD'])
