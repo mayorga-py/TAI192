@@ -1,9 +1,9 @@
-from fastapi import FastAPI,HTTPException 
+from fastapi import FastAPI,HTTPException,Depends
 from fastapi.responses import JSONResponse
 from typing import Optional, List
 from modelsPydantic import modeloUsuario, modeloAuth
 from genToken import createToken
-
+from middlewares import BearerJWT
 
 app= FastAPI(
     title="mi primer API :D",
@@ -32,12 +32,12 @@ def login(autorizacion: modeloAuth):
         print (token)
         return JSONResponse(content=token)
     else:
-        return{"aviso": "el usuario sin autorizacion"}
+        return{"aviso": "Usuario sin autorizacion"}
 
 
 
 #endpoit usuarios
-@app.get("/todosusuarios", response_model= List[modeloUsuario], tags=['Operaciones CRUD'])
+@app.get("/todosusuarios", dependencies=[Depends(BearerJWT())], response_model= List[modeloUsuario], tags=['Operaciones CRUD'])
 def leerUsuarios():
     return usuarios
 
