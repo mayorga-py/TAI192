@@ -5,13 +5,18 @@ from modelsPydantic import modeloUsuario, modeloAuth
 from genToken import createToken
 from middlewares import BearerJWT
 
+#python -m venv pruebafast
+
+#pip install fastapi uvicorn
+
+#metadatos de la aplicación de FastAPI
 app= FastAPI(
     title="mi primer API :D",
     description= "Luis M",
     version= "1.1.2"
 ) #crear un objeto
 
-
+# Base de datos simulada (lista de usuarios)
 usuarios=[
     {"id": 1, "nombre":"luis", "edad":21, "email":"1@gmail.com"},
     {"id": 2, "nombre":"eduardo", "edad":18,"email":"2@gmail.com"},
@@ -27,8 +32,9 @@ def home():
 #endpoint autentificacion
 @app.post('/auth', tags=['autentificacion'])
 def login(autorizacion: modeloAuth):
+    # Validación de credenciales estáticas (debería mejorarse con una base de datos)
     if autorizacion.email == '1@gmail.com' and autorizacion.passw == '123456789':
-        token:str = createToken (autorizacion.model_dump())
+        token:str = createToken (autorizacion.model_dump()) # Genera el token JWT
         print (token)
         return JSONResponse(content=token)
     else:
@@ -36,7 +42,7 @@ def login(autorizacion: modeloAuth):
 
 
 
-#endpoit usuarios
+#endpoint protegido con JWT para obtener todos los usuarios
 @app.get("/todosusuarios", dependencies=[Depends(BearerJWT())], response_model= List[modeloUsuario], tags=['Operaciones CRUD'])
 def leerUsuarios():
     return usuarios
@@ -50,7 +56,7 @@ def agregarUsuarios(nuevo_usuario: modeloUsuario):
     usuarios.append(nuevo_usuario)
     return usuarios
 
-#endpoit
+#endpoit para actualizar un usuario existente
 @app.put("/usuarios/{id}", response_model=modeloUsuario, tags=['Operaciones CRUD'])
 def actualizarUsuario(id: int, usuarioactualizado: modeloUsuario):
     for index, usr in enumerate (usuarios):
@@ -60,7 +66,7 @@ def actualizarUsuario(id: int, usuarioactualizado: modeloUsuario):
         raise HTTPException (status_code=400, detail="no se encontro el usuario")
         
     
-#entpoit parae eliminar usuario
+#entpoit parae eliminar usuario por ID
 @app.delete("/usuarios/{id}", tags=['Operaciones CRUD'])
 def eliminarUsuario(id: int):
     for usuario in usuarios:
