@@ -4,6 +4,9 @@ from typing import Optional, List
 from modelsPydantic import modeloUsuario, modeloAuth
 from genToken import createToken
 from middlewares import BearerJWT
+from db.conexion import Session, engine, Base
+from models.modelsDB import User
+
 
 #python -m venv pruebafast
 
