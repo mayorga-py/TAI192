@@ -1,5 +1,4 @@
 import os 
-import sqlite3
 from sqlalchemy import create_engine
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -14,4 +13,4 @@ Base = declarative_base() #crear base de datos, y tmb hacemos la conexion con la
 #con esto si no hay una base de datos, se creara una nueva y si ya existe lo ignorara
 
 
-Base.metadata.create_all(bind=engine) #crear la tabla en la base de datos
+

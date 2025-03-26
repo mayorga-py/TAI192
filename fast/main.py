@@ -1,5 +1,6 @@
 from fastapi import FastAPI,HTTPException,Depends
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from typing import Optional, List
 from modelsPydantic import modeloUsuario, modeloAuth
 from genToken import createToken
@@ -18,6 +19,9 @@ app= FastAPI(
     description= "Luis M",
     version= "1.1.2"
 ) #crear un objeto
+
+Base.metadata.create_all(bind=engine) #crear la tabla en la base de datos
+
 
 # Base de datos simulada (lista de usuarios)
 usuarios=[
@@ -46,18 +50,56 @@ def login(autorizacion: modeloAuth):
 
 
 #endpoint protegido con JWT para obtener todos los usuarios
-@app.get("/todosusuarios", dependencies=[Depends(BearerJWT())], response_model= List[modeloUsuario], tags=['Operaciones CRUD'])
+@app.get("/todosusuarios", tags=['Operaciones CRUD'])
 def leerUsuarios():
-    return usuarios
+    db= Session()
+    try:
+        consulta= db.query(User).all()
+        return JSONResponse (content=jsonable_encoder(consulta))
+    except Exception as e:
+        return JSONResponse(status_code=500,
+                            content={"message":"error al consultar",
+                                    "excepcion": str(e) })
+    finally:
+        db.close()
+
+#buscar por id
+@app.get("/usuarios/{id}", tags=['Operaciones CRUD'])
+def buscarUno(id:int):
+    db=Session()
+    try:
+        consultauno= db.query(User).filter(User.id == id).first()
+        if not consultauno:
+            return JSONResponse(status_code=404, content=jsonable_encoder({"mensaje": "usuario no encontrado"}))
+        return JSONResponse(content=jsonable_encoder(consultauno))
+    except Exception as e:
+        return JSONResponse(status_code=500,
+                            content={"message":"error al consultar",
+                                    "excepcion": str(e) })
+    finally:
+        db.close()
+
 
 #endpoit Agregar nuevo usuario
 @app.post("/usuarios/", response_model=modeloUsuario, tags=['Operaciones CRUD'])
-def agregarUsuarios(nuevo_usuario: modeloUsuario):
-    for usr in usuarios:
-        if usr ["id"] == nuevo_usuario.id:
-            raise HTTPException (status_code=400, detail="este id ya exsiste")
-    usuarios.append(nuevo_usuario)
-    return usuarios
+def agregarUsuarios(usuario: modeloUsuario):
+    db=Session()
+    #excepciones simepre que se traje con bd
+    try:
+        db.add(User(**usuario.model_dump()))
+        db.commit()
+        return JSONResponse(status_code=201,
+                            content={"message":"usuario guardado",
+                            "usuario": usuario.model_dump() })
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(status_code=500,
+                            content={"message":"error al guardar usuario",
+                                    "excepcion": str(e) })
+    finally:
+        db.close()
+
+
 
 #endpoit para actualizar un usuario existente
 @app.put("/usuarios/{id}", response_model=modeloUsuario, tags=['Operaciones CRUD'])
